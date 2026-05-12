@@ -1,0 +1,29 @@
+# Local game dumps. Do not commit copyrighted game files.
+/RomFS/
+/ExeFS/
+
+# Generated mod overlays and imported audio.
+/mods/*
+!/mods/.gitkeep
+
+# Build output.
+bin/
+obj/
+publish/
+artifacts/
+*.zip
+*.7z
+
+# Local tooling/envs.
+.modenv/
+.venv/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+*~

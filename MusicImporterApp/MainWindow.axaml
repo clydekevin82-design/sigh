@@ -1,0 +1,116 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="1120"
+        d:DesignHeight="720"
+        MinWidth="940"
+        MinHeight="620"
+        x:Class="LtdMusicImporter.MainWindow"
+        Title="LTD Custom Music Importer">
+    <Grid RowDefinitions="Auto,*" Background="#101418">
+        <Border Grid.Row="0" Padding="22,18" Background="#172027">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="ReloadButton" Content="Reload Slots" MinWidth="112" />
+                    <Button x:Name="ImportButton" Content="Import Music" MinWidth="122" Classes="accent" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                    <TextBlock Text="LTD Custom Music Importer" FontSize="22" FontWeight="SemiBold" Foreground="#F3F7FA" />
+                    <TextBlock Text="Builds RomFS music overlays from converted BWAV files or a custom converter command." Foreground="#A7B4BC" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="420,*" Margin="18" ColumnSpacing="18">
+            <Border Grid.Column="0" Background="#182128" BorderBrush="#2D3A43" BorderThickness="1" CornerRadius="8" Padding="16">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Import Setup" FontSize="18" FontWeight="SemiBold" Foreground="#F3F7FA" />
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="RomFS root" Foreground="#DCE5EA" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBox x:Name="RomFsBox" PlaceholderText="/path/to/RomFS" />
+                                <Button x:Name="BrowseRomFsButton" Grid.Column="1" Content="Browse" />
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Custom audio" Foreground="#DCE5EA" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBox x:Name="SourceAudioBox" PlaceholderText=".bwav, .wav, .flac, .ogg, .mp3" />
+                                <Button x:Name="BrowseAudioButton" Grid.Column="1" Content="Browse" />
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Replacement slot" Foreground="#DCE5EA" />
+                            <Grid ColumnDefinitions="150,*" ColumnSpacing="8">
+                                <ComboBox x:Name="CategoryComboBox" SelectedIndex="0" />
+                                <ComboBox x:Name="SlotComboBox" Grid.Column="1" MaxDropDownHeight="280" />
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Mod name" Foreground="#DCE5EA" />
+                            <TextBox x:Name="ModNameBox" Text="CustomMusicImport" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Output folder" Foreground="#DCE5EA" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBox x:Name="OutputFolderBox" PlaceholderText="/path/to/output" />
+                                <Button x:Name="BrowseOutputButton" Grid.Column="1" Content="Browse" />
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="BWAV converter command template" Foreground="#DCE5EA" />
+                            <TextBox x:Name="ConverterBox"
+                                     PlaceholderText="VGAudioCli -i {input} -o {output}"
+                                     AcceptsReturn="True"
+                                     MinHeight="68" />
+                            <TextBlock Text="WAV files are accepted directly. Other formats are normalized with ffmpeg first when available. Use {input} and {output}."
+                                       TextWrapping="Wrap"
+                                       Foreground="#94A3AB" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="CopySourceCheckBox"
+                                  Content="Keep original source audio beside the generated overlay"
+                                  IsChecked="True"
+                                  Foreground="#DCE5EA" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Grid Grid.Column="1" RowDefinitions="*,180" RowSpacing="14">
+                <Border Grid.Row="0" Background="#182128" BorderBrush="#2D3A43" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                        <Grid ColumnDefinitions="*,220" ColumnSpacing="10">
+                            <TextBlock Text="Music Slots" FontSize="18" FontWeight="SemiBold" Foreground="#F3F7FA" />
+                            <TextBox x:Name="FilterBox" Grid.Column="1" PlaceholderText="Filter slots" />
+                        </Grid>
+                        <ListBox x:Name="SlotsListBox" Grid.Row="1" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Background="#0D1115" BorderBrush="#2D3A43" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Text="Log" Foreground="#DCE5EA" FontWeight="SemiBold" />
+                        <TextBox x:Name="LogBox"
+                                 Grid.Row="1"
+                                 Margin="0,8,0,0"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Background="#0D1115"
+                                 Foreground="#BFD0D8"
+                                 BorderThickness="0" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
