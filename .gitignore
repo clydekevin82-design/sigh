@@ -3,8 +3,7 @@
 /ExeFS/
 
 # Generated mod overlays and imported audio.
-/mods/*
-!/mods/.gitkeep
+/music-imports/
 
 # Build output.
 bin/

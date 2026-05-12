@@ -12,6 +12,10 @@ Use the zip from:
 artifacts/LtdMusicImporter-v0.1.0-win-x64.zip
 ```
 
+Linux and macOS zips are also produced for GitHub releases, but GameBanana's
+main download should usually be the Windows x64 build unless the game page has
+separate alternate-file slots.
+
 Do **not** upload:
 
 - `RomFS/`
@@ -51,7 +55,7 @@ Requires a legally dumped RomFS and a BWAV-capable converter such as VGAudioCli.
 ## Credits
 
 ```text
-Tooling: LTD Mod Tools contributors
+Tooling: LTD Custom Music Importer contributors
 Framework: Avalonia UI
 Audio conversion: user-provided BWAV converter such as VGAudioCli
 ```

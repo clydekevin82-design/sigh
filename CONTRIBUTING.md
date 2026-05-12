@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve the tools.
+Thanks for helping improve the music importer.
 
 ## Do Not Commit Game Files
 
@@ -22,16 +22,17 @@ dotnet restore MusicImporterApp/LtdMusicImporter.csproj -r linux-x64
 dotnet build MusicImporterApp/LtdMusicImporter.csproj -r linux-x64
 ```
 
-Build the Windows release zip:
+Build release zips:
 
 ```bash
-RELEASE_VERSION=localtest scripts/package-windows.sh
+RELEASE_VERSION=localtest RUNTIME=linux-x64 scripts/package-release.sh
+RELEASE_VERSION=localtest RUNTIME=win-x64 scripts/package-release.sh
 ```
 
 Before sharing a release zip, inspect it:
 
 ```bash
-unzip -l artifacts/LtdMusicImporter-localtest-win-x64.zip
+unzip -l artifacts/LtdMusicImporter-localtest-linux-x64.zip
 ```
 
 It should contain the app, docs, and license only.

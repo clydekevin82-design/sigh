@@ -17,6 +17,8 @@ A native Windows tool for creating custom music RomFS overlays for LTD.
 - Copies already-converted `.bwav` files directly.
 - Accepts `.wav` through a configurable BWAV converter command.
 - Can normalize `.flac`, `.ogg`, `.mp3`, and `.m4a` through `ffmpeg` first.
+- Experimental new stream slot mode for modders who want a custom named stream
+  file for table patches or hooks.
 
 ## Requirements
 
@@ -34,6 +36,11 @@ A native Windows tool for creating custom music RomFS overlays for LTD.
 4. Choose a category and replacement slot.
 5. Click **Import Music**.
 6. Copy the generated mod folder into your emulator or console mod directory.
+
+Replacement mode is the recommended verified workflow. New stream slot mode
+creates a new `.bwav` file in the overlay, but the stock game may still need
+goods/BGM/UI table patches before that new song appears in music selection
+screens.
 
 ## Ryujinx
 

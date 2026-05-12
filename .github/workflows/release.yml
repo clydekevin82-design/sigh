@@ -9,9 +9,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    name: Windows x64 package
-    runs-on: windows-latest
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            runtime: win-x64
+          - name: Linux x64
+            os: ubuntu-latest
+            runtime: linux-x64
+          - name: macOS x64
+            os: macos-latest
+            runtime: osx-x64
+          - name: macOS Apple Silicon
+            os: macos-latest
+            runtime: osx-arm64
 
     steps:
       - name: Checkout
@@ -23,21 +39,39 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore MusicImporterApp/LtdMusicImporter.csproj -r win-x64
+        run: dotnet restore MusicImporterApp/LtdMusicImporter.csproj -r ${{ matrix.runtime }}
 
       - name: Test build
-        run: dotnet build MusicImporterApp/LtdMusicImporter.csproj -c Release -r win-x64 --no-restore
+        run: dotnet build MusicImporterApp/LtdMusicImporter.csproj -c Release -r ${{ matrix.runtime }} --no-restore
 
-      - name: Package
+      - name: Package Windows
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $version = if ($env:GITHUB_REF_TYPE -eq "tag") { $env:GITHUB_REF_NAME } else { "ci-$env:GITHUB_SHA".Substring(0, 10) }
-          scripts/package-windows.ps1 -Configuration Release -Runtime win-x64 -ReleaseVersion $version
+          scripts/package-windows.ps1 -Configuration Release -Runtime ${{ matrix.runtime }} -ReleaseVersion $version
+
+      - name: Package Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          version="${GITHUB_REF_TYPE:-branch}"
+          if [ "$version" = "tag" ]; then
+            version="$GITHUB_REF_NAME"
+          else
+            version="ci-${GITHUB_SHA:0:7}"
+          fi
+          RELEASE_VERSION="$version" RUNTIME="${{ matrix.runtime }}" scripts/package-release.sh
+
+      - name: Safety check
+        if: runner.os != 'Windows'
+        shell: bash
+        run: scripts/check-release-safety.sh artifacts/*.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LtdMusicImporter-win-x64
+          name: LtdMusicImporter-${{ matrix.runtime }}
           path: artifacts/*.zip
 
       - name: GitHub release

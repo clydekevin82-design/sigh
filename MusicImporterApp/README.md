@@ -47,3 +47,17 @@ variant; the app handles slot selection and overlay packaging around that
 conversion step.
 
 The generated mod also includes `music-import.json` and a short `README.md`.
+
+## New Stream Slots
+
+The app can create an experimental new stream slot instead of replacing an
+existing file. This writes a new `.bwav` path under:
+
+```text
+romfs/Sound/Resource/Stream/
+```
+
+This is useful for modders who have a table patch or executable hook that can
+reference the new stream name. For normal users, replacement mode is still the
+verified path because the stock game may not automatically show brand-new songs
+in music selection menus.

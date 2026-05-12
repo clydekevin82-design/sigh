@@ -42,3 +42,10 @@ For best results, replace a slot with audio close to the original slot's role:
 - SFX: short one-shot sounds.
 
 Long files in short SFX slots may work but can be cut off by game logic.
+
+## New Stream Slot Mode
+
+New stream slot mode creates a new `.bwav` file name instead of replacing an
+existing one. This is mainly for advanced modders. The raw file will exist in
+the overlay, but the game needs some piece of data or code to reference that
+new stream name before it becomes selectable in stock UI.

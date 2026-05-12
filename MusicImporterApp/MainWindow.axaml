@@ -46,11 +46,24 @@
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Replacement slot" Foreground="#DCE5EA" />
+                            <TextBlock Text="Import mode" Foreground="#DCE5EA" />
+                            <ComboBox x:Name="ModeComboBox" SelectedIndex="0" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Music slot" Foreground="#DCE5EA" />
                             <Grid ColumnDefinitions="150,*" ColumnSpacing="8">
                                 <ComboBox x:Name="CategoryComboBox" SelectedIndex="0" />
                                 <ComboBox x:Name="SlotComboBox" Grid.Column="1" MaxDropDownHeight="280" />
                             </Grid>
+                        </StackPanel>
+
+                        <StackPanel x:Name="NewSlotPanel" Spacing="6" IsVisible="False">
+                            <TextBlock Text="New slot name" Foreground="#DCE5EA" />
+                            <TextBox x:Name="NewSlotNameBox" PlaceholderText="My custom song" />
+                            <TextBlock Text="Experimental: creates a new stream file in the overlay. Extra game table/UI hooks may be needed before it appears in stock music selection screens."
+                                       TextWrapping="Wrap"
+                                       Foreground="#D69E5A" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">

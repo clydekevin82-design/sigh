@@ -15,9 +15,13 @@ public partial class MainWindow : Window
 {
     private readonly ObservableCollection<SlotInfo> _allSlots = new();
     private readonly ObservableCollection<SlotInfo> _visibleSlots = new();
+    private readonly string[] _modes =
+    [
+        "Replace existing slot",
+        "Add new stream slot (experimental)"
+    ];
     private readonly string[] _categories =
     [
-        "All",
         "Music Disks",
         "Background Music",
         "Games",
@@ -30,11 +34,15 @@ public partial class MainWindow : Window
         InitializeComponent();
         SlotsListBox.ItemsSource = _visibleSlots;
         SlotComboBox.ItemsSource = _visibleSlots;
+        ModeComboBox.ItemsSource = _modes;
+        ModeComboBox.SelectedIndex = 0;
         CategoryComboBox.ItemsSource = _categories;
         CategoryComboBox.SelectedIndex = 0;
 
         RomFsBox.Text = FindDefaultRomFs();
-        OutputFolderBox.Text = Path.Combine(FindWorkspaceRoot(), "mods");
+        OutputFolderBox.Text = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "LTD Custom Music Imports");
         ConverterBox.Text = "VGAudioCli -i {input} -o {output}";
 
         BrowseRomFsButton.Click += async (_, _) => await BrowseRomFsAsync();
@@ -43,6 +51,7 @@ public partial class MainWindow : Window
         ReloadButton.Click += (_, _) => LoadSlots();
         ImportButton.Click += async (_, _) => await ImportAsync();
         FilterBox.TextChanged += (_, _) => ApplyFilter();
+        ModeComboBox.SelectionChanged += (_, _) => UpdateModeControls();
         CategoryComboBox.SelectionChanged += (_, _) => ApplyFilter();
         SlotsListBox.SelectionChanged += (_, _) =>
         {
@@ -53,6 +62,7 @@ public partial class MainWindow : Window
         };
 
         LoadSlots();
+        UpdateModeControls();
     }
 
     private static string FindWorkspaceRoot()
@@ -174,12 +184,12 @@ public partial class MainWindow : Window
     private void ApplyFilter()
     {
         var filter = FilterBox.Text?.Trim() ?? string.Empty;
-        var category = CategoryComboBox.SelectedItem as string ?? "All";
+        var category = CategoryComboBox.SelectedItem as string ?? "Music Disks";
         var previous = SlotComboBox.SelectedItem as SlotInfo;
 
         _visibleSlots.Clear();
         foreach (var slot in _allSlots.Where(slot =>
-            (category == "All" || slot.Category == category) &&
+            slot.Category == category &&
             (string.IsNullOrWhiteSpace(filter) ||
              slot.FileName.Contains(filter, StringComparison.OrdinalIgnoreCase))))
         {
@@ -202,8 +212,12 @@ public partial class MainWindow : Window
         {
             var romFs = RequiredDirectory(RomFsBox.Text, "RomFS root");
             var source = RequiredFile(SourceAudioBox.Text, "Custom audio");
-            var outputRoot = RequiredDirectory(OutputFolderBox.Text, "Output folder");
-            var slot = SlotComboBox.SelectedItem as SlotInfo;
+            var outputRoot = EnsureDirectory(OutputFolderBox.Text, "Output folder");
+            var isNewSlot = IsNewSlotMode();
+            var category = CategoryComboBox.SelectedItem as string ?? "Music Disks";
+            var slot = isNewSlot
+                ? CreateNewSlotInfo(category, NewSlotNameBox.Text)
+                : SlotComboBox.SelectedItem as SlotInfo;
             if (slot is null)
             {
                 throw new InvalidOperationException("Choose a replacement slot.");
@@ -240,6 +254,11 @@ public partial class MainWindow : Window
             }
 
             WriteManifest(modRoot, romFs, source, slot, targetFile, converter);
+            if (isNewSlot)
+            {
+                WriteNewSlotNotes(modRoot, slot);
+                Log($"Added experimental new stream slot {slot.FileName}.");
+            }
             Log($"Wrote mod overlay: {modRoot}");
         }
         catch (Exception ex)
@@ -259,6 +278,30 @@ public partial class MainWindow : Window
         return path;
     }
 
+    private static string EnsureDirectory(string? path, string label)
+    {
+        path = path?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new InvalidOperationException($"{label} is required.");
+        }
+
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private void UpdateModeControls()
+    {
+        var isNewSlot = IsNewSlotMode();
+        SlotComboBox.IsEnabled = !isNewSlot;
+        SlotsListBox.IsEnabled = !isNewSlot;
+        FilterBox.IsEnabled = !isNewSlot;
+        NewSlotPanel.IsVisible = isNewSlot;
+    }
+
+    private bool IsNewSlotMode() =>
+        (ModeComboBox.SelectedItem as string)?.StartsWith("Add new", StringComparison.OrdinalIgnoreCase) == true;
+
     private static string RequiredFile(string? path, string label)
     {
         path = path?.Trim() ?? string.Empty;
@@ -276,6 +319,48 @@ public partial class MainWindow : Window
         var invalid = Path.GetInvalidFileNameChars().ToHashSet();
         var safe = new string(raw.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
         return string.IsNullOrWhiteSpace(safe) ? "CustomMusicImport" : safe;
+    }
+
+    private static SlotInfo CreateNewSlotInfo(string category, string? displayName)
+    {
+        var stem = SanitizeIdentifier(displayName);
+        if (string.IsNullOrWhiteSpace(stem))
+        {
+            stem = "CustomSong";
+        }
+
+        var fileName = category switch
+        {
+            "Music Disks" => $"SE_Record_Custom_{stem}.bwav",
+            "Background Music" => $"BGM_Custom_{stem}.bwav",
+            "Games" => $"SE_VideoGame_Custom_{stem}.bwav",
+            "Dreams" => $"BGM_Demo_Dream_Custom_{stem}.bwav",
+            "SFX" => $"SE_Custom_{stem}.bwav",
+            _ => $"BGM_Custom_{stem}.bwav"
+        };
+
+        return new SlotInfo(fileName, category);
+    }
+
+    private static string SanitizeIdentifier(string? value)
+    {
+        value = value?.Trim() ?? string.Empty;
+        var builder = new System.Text.StringBuilder();
+        var capitalizeNext = true;
+        foreach (var ch in value)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(capitalizeNext ? char.ToUpperInvariant(ch) : ch);
+                capitalizeNext = false;
+            }
+            else
+            {
+                capitalizeNext = true;
+            }
+        }
+
+        return builder.ToString();
     }
 
     private async Task ConvertToBwavAsync(string converterTemplate, string input, string output)
@@ -456,6 +541,16 @@ public partial class MainWindow : Window
             $"# {manifest.ModName}{Environment.NewLine}{Environment.NewLine}" +
             $"Replaces `{slot.FileName}` in `{slot.Category}` with a custom music file.{Environment.NewLine}{Environment.NewLine}" +
             $"Copy this folder's `romfs` directory into your emulator or CFW mod directory for the title.{Environment.NewLine}");
+    }
+
+    private static void WriteNewSlotNotes(string modRoot, SlotInfo slot)
+    {
+        File.WriteAllText(
+            Path.Combine(modRoot, "NEW_SLOT_EXPERIMENTAL.md"),
+            "# Experimental New Stream Slot" + Environment.NewLine + Environment.NewLine +
+            $"This overlay adds a new stream file: `{slot.FileName}`." + Environment.NewLine + Environment.NewLine +
+            "The raw stream file is present in `romfs/Sound/Resource/Stream`, but the stock game may not show it in music selection menus until the relevant goods/BGM/UI tables are patched to reference it." + Environment.NewLine + Environment.NewLine +
+            "Use replacement mode for fully verified in-game playback today. Use this mode when another mod, table patch, or executable hook can reference the new stream name." + Environment.NewLine);
     }
 
     private static string Quote(string value)
